@@ -31,9 +31,12 @@ fun basicStartAThread() {
 
 fun virtualThreadExecutor(){
     val executor: ExecutorService = Executors.newVirtualThreadPerTaskExecutor()
-    val client = HttpClient.newHttpClient()
+    val httpExecutor: ExecutorService = Executors.newVirtualThreadPerTaskExecutor()
+    val client = HttpClient.newBuilder()
+        .executor(httpExecutor)
+        .build()
     for (i in 0..99) {
-        executor.submit {
+        val handle = executor.submit {
             println(
                 "Running task in a virtual thread: $i"
             )
@@ -49,7 +52,9 @@ fun virtualThreadExecutor(){
                 e.printStackTrace()
             }
         }
+
     }
+
     executor.awaitTermination(10, java.util.concurrent.TimeUnit.SECONDS)
     executor.shutdown()
 }
@@ -81,7 +86,10 @@ fun fixedThreadPoolExecutor(){
 
 fun virtualThreadExecutorWithSemaphore(){
     val executor: ExecutorService = Executors.newVirtualThreadPerTaskExecutor()
-    val client = HttpClient.newHttpClient()
+    val httpExecutor: ExecutorService = Executors.newVirtualThreadPerTaskExecutor()
+    val client = HttpClient.newBuilder()
+        .executor(httpExecutor)
+        .build()
     val semaphore = TimedSemaphore(1, java.util.concurrent.TimeUnit.SECONDS, 2)
     for (i in 0..99) {
         executor.submit {
